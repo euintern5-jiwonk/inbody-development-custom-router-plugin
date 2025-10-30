@@ -1,0 +1,90 @@
+.eael-logo-carousel-wrap{
+	.eael-logo-carousel {
+		&.grayscale-normal {
+			img {
+				filter: grayscale(100%);
+			}
+	
+			.swiper-slide:hover {
+				img {
+					filter: none;
+				}
+			}
+		}
+		&.grayscale-hover {
+			.swiper-slide:hover {
+				img {
+					filter: grayscale(100%);
+				}
+			}
+		}
+		&.swiper-container {
+			.swiper-slide {
+				text-align: center;
+	
+				img {
+					width: auto;
+				}
+			}
+		}
+
+		&.eael-marquee-carousel .swiper-wrapper{
+			transition-timing-function: linear !important; 
+		}
+	
+		.eael-logo-carousel-title a {
+			color: inherit;
+		}
+	}
+
+	//Pagination CSS
+	&.swiper-container-wrap {
+		.swiper-pagination {
+			bottom: 10px;
+			left: 0;
+			width: 100%;
+		}
+
+		.swiper-pagination-bullet {
+			background: #ccc;
+			margin: 0 4px;
+			opacity: 1;
+			height: 8px;
+			width: 8px;
+		}
+
+		.swiper-pagination-bullet-active {
+			background: #000;
+		}
+	}
+
+	&.swiper-container-wrap-dots-outside .swiper-pagination {
+		position: static;
+	}
+
+	.swiper-button-next:after, .swiper-rtl .swiper-button-prev:after,
+    .swiper-button-prev:after, .swiper-rtl .swiper-button-next:after {
+        content: '';
+    }
+
+	.eael-lc-logo {
+		transition: all .3s ease;
+	}
+	.swiper-button-next, .swiper-button-prev {
+		background-image: none;
+		outline: none;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		transition: all .3s ease;
+	}
+
+	.swiper-container {
+		width: 100%;
+
+		~ .swiper-button-prev:after,
+		~ .swiper-button-next:after {
+			content: none;
+		}
+	}
+}
