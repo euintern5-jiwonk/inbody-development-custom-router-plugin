@@ -1,0 +1,47 @@
+{
+    "packages": [
+        {
+            "name": "gravityforms/gravity-tools",
+            "version": "0.3.7",
+            "version_normalized": "0.3.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gravityforms/gravity-tools.git",
+                "reference": "aab2f20d2eefe6e53e4c129d21972f4a5412874a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gravityforms/gravity-tools/zipball/aab2f20d2eefe6e53e4c129d21972f4a5412874a",
+                "reference": "aab2f20d2eefe6e53e4c129d21972f4a5412874a",
+                "shasum": ""
+            },
+            "require-dev": {
+                "lucatume/function-mocker": "~1.0",
+                "phpunit/phpunit": "^9.0",
+                "yoast/phpunit-polyfills": "4.0.0"
+            },
+            "time": "2025-08-15T15:32:39+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "classmap": [
+                    "src"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Rocket Genius",
+                    "email": "info@rocketgenius.com"
+                }
+            ],
+            "description": "PHP libraries to support Gravity Forms applications.",
+            "support": {
+                "source": "https://github.com/gravityforms/gravity-tools/tree/0.3.7"
+            },
+            "install-path": "../gravityforms/gravity-tools"
+        }
+    ],
+    "dev": false,
+    "dev-package-names": []
+}

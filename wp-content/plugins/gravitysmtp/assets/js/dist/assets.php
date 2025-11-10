@@ -1,0 +1,1 @@
+<?php return array('hash_map' => array('scripts-admin.min.js' => array('version' => '3fe7b75ddf7ad5361f0d15d07a76e5bc', 'file' => 'scripts-admin.min.js'), 'vendor-admin.min.js' => array('version' => '283fe643cff337f75cff56fcec30ccdf', 'file' => 'vendor-admin.min.js')));

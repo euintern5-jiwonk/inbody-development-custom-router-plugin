@@ -13,9 +13,12 @@ class Router {
         add_action( 'template_redirect', [ $this, 'handle_request' ] );
     }
 
+    // Don't forget to register 'slug' and 'id' as query vars
     public function register_query_vars( $vars ) {
         $vars[] = 'route';
         $vars[] = 'action';
+        $vars[] = 'slug';  // NEW
+        $vars[] = 'id';    // NEW
         return $vars;
     }
 
@@ -27,8 +30,14 @@ class Router {
     public function add_rewrite_rules( $rules ) {
         $new_rules = [];
 
-        // Default route (example)
+        // Existing API route
         $new_rules['api/([^/]+)/([^/]+)/?$'] = 'index.php?route=$matches[1]&action=$matches[2]';
+
+        // NEW: SPA page loading route
+        $new_rules['spa-page/([^/]+)/?$'] = 'index.php?route=spa&action=load&slug=$matches[1]';
+        
+        // OR if you want to use page IDs:
+        $new_rules['spa-page-id/([0-9]+)/?$'] = 'index.php?route=spa&action=load&id=$matches[1]';
 
         // Custom routes from admin
         if ( ! empty( $this->routes ) ) {
@@ -62,7 +71,89 @@ class Router {
         flush_rewrite_rules();
     }
 
+    public function get_route( $slug ) {
+        return isset( $this->routes[ $slug ] ) ? $this->routes[ $slug ] : false;
+    }
+
     public function get_routes() {
         return $this->routes;
+    }
+
+    /**
+     * Delete a single route
+     * 
+     * @param string $slug The route slug to delete
+     * @return bool True on success, false on failure
+     */
+    public function delete_route( $slug ) {
+        if ( ! isset( $this->routes[ $slug ] ) ) {
+            return false;
+        }
+
+        unset( $this->routes[ $slug ] );
+        
+        $result = update_option( 'custom_routes', $this->routes );
+        
+        if ( $result ) {
+            flush_rewrite_rules();
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Delete all custom routes
+     * 
+     * @return bool True on success, false on failure
+     */
+    public function delete_all_routes() {
+        $this->routes = [];
+        
+        $result = update_option( 'custom_routes', [] );
+        
+        if ( $result ) {
+            flush_rewrite_rules();
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Check if a route exists
+     * 
+     * @param string $slug Route slug
+     * @return bool
+     */
+    public function route_exists( $slug ) {
+        return isset( $this->routes[ $slug ] );
+    }
+
+    /**
+     * Update an existing route
+     * 
+     * @param string $slug Route slug
+     * @param string $regex New regex pattern
+     * @param string $query New query string
+     * @return bool True on success, false on failure
+     */
+    public function update_route( $slug, $regex, $query ) {
+        if ( ! isset( $this->routes[ $slug ] ) ) {
+            return false;
+        }
+
+        $this->routes[ $slug ] = [
+            'regex' => $regex,
+            'query' => $query,
+            'created_at' => $this->routes[ $slug ]['created_at'] ?? current_time( 'mysql' ),
+            'updated_at' => current_time( 'mysql' ),
+        ];
+
+        $result = update_option( 'custom_routes', $this->routes );
+        
+        if ( $result ) {
+            flush_rewrite_rules();
+        }
+        
+        return $result;
     }
 }

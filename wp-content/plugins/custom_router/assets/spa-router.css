@@ -1,0 +1,69 @@
+/**
+ * SPA Router Styles
+ */
+
+/* Loading state */
+.spa-loading {
+    opacity: 0.5;
+    pointer-events: none;
+    position: relative;
+}
+
+/* Loading spinner */
+.spa-loader {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.spa-loader .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error message */
+.spa-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.spa-error h2 {
+    margin-top: 0;
+    color: #721c24;
+}
+
+/* Page transition */
+#spa-content {
+    transition: opacity 0.2s ease;
+}
+
+/* Optional: Progress bar */
+.spa-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(to right, #3498db, #2ecc71);
+    transition: width 0.3s ease;
+    z-index: 99999;
+}

@@ -1,0 +1,453 @@
+/**
+ * Router Admin Styles
+ */
+
+.router-admin-wrap {
+    max-width: 1400px;
+}
+
+.router-admin-wrap .wp-heading-inline {
+    margin-right: 10px;
+}
+
+/* Statistics Card */
+.router-stats-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 13px;
+    color: #646970;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.stat-value.stat-success {
+    color: #00a32a;
+}
+
+/* Section Styles */
+.router-section {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.router-section h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-header h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* Routes Table */
+.routes-table {
+    margin-top: 15px;
+}
+
+.routes-table th {
+    font-weight: 600;
+}
+
+.routes-table .column-slug {
+    width: 15%;
+}
+
+.routes-table .column-regex {
+    width: 25%;
+}
+
+.routes-table .column-query {
+    width: 25%;
+}
+
+.routes-table .column-example {
+    width: 20%;
+}
+
+.routes-table .column-actions {
+    width: 15%;
+    text-align: right;
+}
+
+.routes-table code {
+    background: #f6f7f7;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #d63638;
+}
+
+.example-url {
+    display: block;
+    word-break: break-all;
+}
+
+.example-pattern {
+    color: #2271b1;
+}
+
+.example-segment {
+    color: #d63638;
+    font-style: italic;
+}
+
+/* No Routes Message */
+.no-routes-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #646970;
+}
+
+.no-routes-message p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Form Styles */
+.route-form .form-table th {
+    padding: 15px 10px 15px 0;
+    width: 200px;
+}
+
+.route-form .required {
+    color: #d63638;
+}
+
+.route-form .description {
+    margin-top: 5px;
+    color: #646970;
+}
+
+.route-form .description code {
+    background: #f6f7f7;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #d63638;
+}
+
+/* Examples Accordion */
+.route-examples {
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.route-examples h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.route-examples details {
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.route-examples summary {
+    font-weight: 600;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    user-select: none;
+}
+
+.route-examples summary:hover {
+    background: #f0f0f1;
+}
+
+.route-examples pre {
+    margin: 10px 0 0;
+    padding: 15px;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+.route-examples code {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+/* Button Styles */
+.button-link-delete {
+    color: #b32d2e;
+    border-color: #b32d2e;
+}
+
+.button-link-delete:hover {
+    color: #fff;
+    background: #b32d2e;
+    border-color: #b32d2e;
+}
+
+.delete-route-btn,
+.test-route-btn {
+    margin-right: 5px;
+}
+
+/* Delete All Form */
+.delete-all-form {
+    display: inline-block;
+}
+
+/* Modal Styles */
+.router-modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.router-modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+}
+
+.router-modal-close {
+    color: #646970;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.router-modal-close:hover,
+.router-modal-close:focus {
+    color: #1d2327;
+}
+
+#test-route-result {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+}
+
+#test-route-result pre {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 15px;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+/* Documentation Section */
+.router-docs {
+    background: #f9f9f9;
+}
+
+.docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.doc-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.doc-card h3 {
+    margin-top: 0;
+    color: #1d2327;
+    font-size: 16px;
+    border-bottom: 2px solid #2271b1;
+    padding-bottom: 10px;
+}
+
+.doc-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.doc-card li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.doc-card li:last-child {
+    border-bottom: none;
+}
+
+.doc-card code {
+    background: #f6f7f7;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #d63638;
+    font-size: 12px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 782px) {
+    .router-stats-card {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .stat-item {
+        width: 100%;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .routes-table .column-actions {
+        text-align: left;
+    }
+
+    .docs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading Spinner */
+.router-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #2271b1;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Success/Error Messages Enhancement */
+.notice {
+    margin: 20px 0;
+}
+
+.notice p {
+    margin: 0.5em 0;
+}
+
+/* Smooth Transitions */
+.delete-route-btn,
+.test-route-btn,
+.button {
+    transition: all 0.2s ease;
+}
+
+/* Hover Effects */
+.routes-table tbody tr:hover {
+    background-color: #f6f7f7;
+}
+
+/* Code Highlighting */
+.routes-table code,
+.route-form code,
+.doc-card code {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Action Buttons Container */
+.column-actions form {
+    display: inline-block;
+}
+
+.column-actions .button {
+    margin: 0 2px;
+}
+
+/* Tooltips */
+.router-tooltip {
+    position: absolute;
+    background: #1d2327;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 100001;
+    pointer-events: none;
+}
+
+.router-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1d2327 transparent transparent transparent;
+}
+
+/* Copy Button */
+.copy-btn {
+    font-size: 11px;
+    padding: 2px 8px;
+    height: auto;
+    line-height: 1.4;
+    vertical-align: middle;
+}
+
+/* Form Errors */
+.form-error {
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
