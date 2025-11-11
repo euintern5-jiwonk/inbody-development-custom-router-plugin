@@ -9,7 +9,7 @@ class Router {
         $this->routes = get_option( 'custom_routes', [] );
 
         add_filter( 'query_vars', [ $this, 'register_query_vars' ] );
-        add_filter( 'rewrite_rules_array', [ $this, 'add_rewrite_rules' ] );
+        add_action( 'init', [ $this, 'register_custom_rewrite_rules' ] );
         add_action( 'template_redirect', [ $this, 'handle_request' ] );
     }
 
@@ -17,43 +17,75 @@ class Router {
     public function register_query_vars( $vars ) {
         $vars[] = 'route';
         $vars[] = 'action';
-        $vars[] = 'slug';  // NEW
-        $vars[] = 'id';    // NEW
+        $vars[] = 'slug';
+        $vars[] = 'id';
         return $vars;
     }
 
+    /**
+     * Register custom rewrite rules using add_rewrite_rule()
+     * This is the WordPress standard way - rules are added on every page load
+     */
+    public function register_custom_rewrite_rules() {
+        // Generic API route for backwards compatibility
+        add_rewrite_rule(
+            '^api/([^/]+)/([^/]+)/?$',
+            'index.php?route=$matches[1]&action=$matches[2]',
+            'top'
+        );
+
+        // SPA page loading route (won't be blocked by content blockers)
+        add_rewrite_rule(
+            '^wp-spa/load/?$',
+            'index.php?route=spa&action=load',
+            'top'
+        );
+
+        // SPA page by slug
+        add_rewrite_rule(
+            '^spa-page/([^/]+)/?$',
+            'index.php?route=spa&action=load&slug=$matches[1]',
+            'top'
+        );
+
+        // SPA page by ID
+        add_rewrite_rule(
+            '^spa-page-id/([0-9]+)/?$',
+            'index.php?route=spa&action=load&id=$matches[1]',
+            'top'
+        );
+
+        // Custom routes from admin
+        if ( ! empty( $this->routes ) ) {
+            foreach ( $this->routes as $slug => $route ) {
+                add_rewrite_rule(
+                    '^' . $route['regex'],
+                    $route['query'],
+                    'top'
+                );
+            }
+        }
+
+        error_log('Custom rewrite rules registered');
+    }
+
+    /**
+     * Legacy method - kept for backwards compatibility
+     * Now we use add_rewrite_rule() in init hook instead
+     */
     public function register_rewrite_rules() {
         global $wp_rewrite;
         $wp_rewrite->flush_rules();
     }
 
-    public function add_rewrite_rules( $rules ) {
-        $new_rules = [];
-
-        // Existing API route
-        $new_rules['api/([^/]+)/([^/]+)/?$'] = 'index.php?route=$matches[1]&action=$matches[2]';
-
-        // NEW: SPA page loading route
-        $new_rules['spa-page/([^/]+)/?$'] = 'index.php?route=spa&action=load&slug=$matches[1]';
-        
-        // OR if you want to use page IDs:
-        $new_rules['spa-page-id/([0-9]+)/?$'] = 'index.php?route=spa&action=load&id=$matches[1]';
-
-        // Custom routes from admin
-        if ( ! empty( $this->routes ) ) {
-            foreach ( $this->routes as $slug => $route ) {
-                $regex = $route['regex'];
-                $query = $route['query'];
-                $new_rules[ $regex ] = $query;
-            }
-        }
-
-        return $new_rules + $rules;
-    }
-
     public function handle_request() {
         $route  = get_query_var( 'route' );
         $action = get_query_var( 'action' );
+
+        // Debug logging
+        error_log('Router handle_request called');
+        error_log('Route: ' . $route . ', Action: ' . $action);
+        error_log('Request URI: ' . $_SERVER['REQUEST_URI']);
 
         if ( $route && $action ) {
             $handler = new RouteHandler( $route, $action );

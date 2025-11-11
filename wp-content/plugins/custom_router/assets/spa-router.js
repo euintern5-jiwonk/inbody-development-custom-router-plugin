@@ -11,7 +11,6 @@
             loaderClass: 'spa-loading',
             linkSelector: 'a[data-spa-link]',
             apiEndpoint: SPARouterData.apiEndpoint,
-            cartEndpoint: SPARouterData.homeUrl + '/api/cart',
         },
 
         // Cache
@@ -41,6 +40,7 @@
                 const pageId = $link.data('page-id');
                 const productId = $link.data('product-id');
                 const url = $link.attr('href');
+                console.log('Slug: ', pageSlug, ' PageID: ', pageId);
 
                 if (pageSlug) {
                     self.loadPage(pageSlug, url, { product_id: productId });

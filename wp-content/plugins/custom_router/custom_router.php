@@ -76,7 +76,7 @@ final class CustomRouterPlugin {
         // Pass data to JavaScript
         wp_localize_script('spa-router', 'SPARouterData', array(
             'ajaxUrl'         => admin_url('admin-ajax.php'),
-            'apiEndpoint'     => home_url('/api/spa/load'),
+            'apiEndpoint'     => home_url('/wp-spa/load'),
             'siteName'        => get_bloginfo('name'),
             'currentPageSlug' => get_post_field('post_name', get_the_ID()),
             'nonce'           => wp_create_nonce('spa_router_nonce')
