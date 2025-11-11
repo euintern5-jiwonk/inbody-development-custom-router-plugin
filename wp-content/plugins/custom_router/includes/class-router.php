@@ -17,6 +17,7 @@ class Router {
     public function register_query_vars( $vars ) {
         $vars[] = 'route';
         $vars[] = 'action';
+        $vars[] = 'parent';
         $vars[] = 'slug';
         $vars[] = 'id';
         return $vars;

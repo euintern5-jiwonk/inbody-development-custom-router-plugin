@@ -164,6 +164,7 @@
 
             console.log('Loading page via API:', apiUrl);
 
+            // TODO: (FIXME) ajax 400 error occur
             $.ajax({
                 url: apiUrl,
                 method: 'GET',

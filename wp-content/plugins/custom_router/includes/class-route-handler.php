@@ -47,11 +47,10 @@ class RouteHandler {
      * Returns ONLY the page content without header/footer
      */
     private function handle_spa_page() {
-        // TODO: (FIXME) function not called
-        // Get page slug or ID from query params
-        $page_slug = isset( $_GET['slug'] ) ? sanitize_title( $_GET['slug'] ) : '';
-        $page_id   = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
-        
+        // Get page slug or ID from query vars (set by rewrite rules)
+        $page_slug = get_query_var( 'slug' ) ? sanitize_title( get_query_var( 'slug' ) ) : '';
+        $page_id   = get_query_var( 'id' ) ? intval( get_query_var( 'id' ) ) : 0;
+
         // Debug logging
         error_log('Handle SPA Page function called');
         error_log('Page Slug: ' . $page_slug . ' Page ID: ' . $page_id);
@@ -247,8 +246,8 @@ class RouteHandler {
      * Alternative: Return full HTML page fragment
      */
     private function handle_page_content() {
-        $page_slug = isset( $_GET['slug'] ) ? sanitize_title( $_GET['slug'] ) : '';
-        
+        $page_slug = get_query_var( 'slug' ) ? sanitize_title( get_query_var( 'slug' ) ) : '';
+
         if ( empty( $page_slug ) ) {
             $this->html_response( '<p>Page not found</p>', 404 );
             return;
