@@ -159,26 +159,36 @@
 
             this.showLoader();
 
-            // Build query params
-            const queryParams = $.param(Object.assign({ slug: slug }, params));
+            // Build API URL - slug is now part of the path: /wp-spa/load/slug
+            const apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(slug);
+
+            console.log('Loading page via API:', apiUrl);
 
             $.ajax({
-                url: this.config.apiEndpoint + '?' + queryParams,
+                url: apiUrl,
                 method: 'GET',
                 dataType: 'json',
                 success: (response) => {
+                    console.log('API Response received:', response);
+
                     if (response.success) {
                         // Cache the response
                         this.cache[cacheKey] = response.page;
-                        
+
                         this.renderPage(response.page, url, slug, params, pushState);
                     } else {
+                        console.error('API returned success=false:', response);
                         this.showError('Page not found');
                     }
                 },
                 error: (xhr) => {
-                    this.showError('Failed to load page');
-                    console.error('AJAX Error:', xhr);
+                    console.error('AJAX Error:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        responseText: xhr.responseText,
+                        url: apiUrl
+                    });
+                    this.showError('Failed to load page (Error ' + xhr.status + ')');
                 },
                 complete: () => {
                     this.hideLoader();

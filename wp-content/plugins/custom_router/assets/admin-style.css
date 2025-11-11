@@ -451,3 +451,148 @@
     10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
     20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
+
+/* Verification Section */
+.router-verification-section {
+    margin-bottom: 25px;
+}
+
+.verification-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.verification-actions .button .dashicons {
+    vertical-align: middle;
+    margin-top: -2px;
+}
+
+.verification-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.verification-card.verification-success {
+    border-left: 4px solid #00a32a;
+    background: #f6fff8;
+}
+
+.verification-card.verification-warning {
+    border-left: 4px solid #dba617;
+    background: #fffbf0;
+}
+
+.verification-card.verification-error {
+    border-left: 4px solid #d63638;
+    background: #fff8f8;
+}
+
+.verification-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+.verification-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.verification-success .verification-icon {
+    color: #00a32a;
+}
+
+.verification-warning .verification-icon {
+    color: #dba617;
+}
+
+.verification-error .verification-icon {
+    color: #d63638;
+}
+
+.verification-icon .dashicons {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+}
+
+.verification-message {
+    flex: 1;
+}
+
+.verification-message strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #1d2327;
+}
+
+.verification-message .description {
+    margin: 0;
+    color: #646970;
+    font-size: 13px;
+}
+
+.verification-details {
+    margin-top: 20px;
+}
+
+.verification-details h3 {
+    margin: 0 0 15px;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.verification-details .widefat {
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.verification-details .widefat th {
+    background: #f6f7f7;
+    font-weight: 600;
+    padding: 10px;
+}
+
+.verification-details .widefat td {
+    padding: 10px;
+}
+
+.rule-registered {
+    background: rgba(0, 163, 42, 0.03);
+}
+
+.rule-missing {
+    background: rgba(214, 54, 56, 0.03);
+}
+
+.verification-details .widefat .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+}
+
+.verification-details code {
+    background: #f6f7f7;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #d63638;
+    word-break: break-word;
+}
+
+/* Spinning animation for check button */
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

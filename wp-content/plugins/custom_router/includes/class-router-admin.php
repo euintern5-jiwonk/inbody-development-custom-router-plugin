@@ -9,9 +9,13 @@ class RouterAdmin {
         $this->router = $router;
         add_action( 'admin_menu', [ $this, 'add_admin_page' ] );
         add_action( 'admin_post_add_route', [ $this, 'handle_add_route' ] );
-        add_action( 'admin_post_delete_route', [ $this, 'handle_delete_route' ] );  // NEW
-        add_action( 'admin_post_delete_all_routes', [ $this, 'handle_delete_all_routes' ] );  // NEW
-        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );  // NEW
+        add_action( 'admin_post_delete_route', [ $this, 'handle_delete_route' ] );
+        add_action( 'admin_post_delete_all_routes', [ $this, 'handle_delete_all_routes' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+
+        // AJAX handlers
+        add_action( 'wp_ajax_verify_rewrite_rules', [ $this, 'ajax_verify_rewrite_rules' ] );
+        add_action( 'wp_ajax_flush_rewrite_rules', [ $this, 'ajax_flush_rewrite_rules' ] );
     }
 
     public function add_admin_page() {
@@ -54,6 +58,7 @@ class RouterAdmin {
             'confirmDelete' => __( 'Are you sure you want to delete this route?', 'custom-router' ),
             'confirmDeleteAll' => __( 'Are you sure you want to delete ALL routes? This cannot be undone!', 'custom-router' ),
             'nonce' => wp_create_nonce( 'router_admin_nonce' ),
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
         ) );
     }
 
@@ -62,17 +67,18 @@ class RouterAdmin {
      */
     public function render_admin_page() {
         $routes = $this->router->get_routes();
-        
+        $verification = $this->router->verify_rewrite_rules();
+
         // Get messages from URL params
         $message = isset( $_GET['message'] ) ? sanitize_text_field( $_GET['message'] ) : '';
         $error = isset( $_GET['error'] ) ? sanitize_text_field( $_GET['error'] ) : '';
-        
+
         ?>
         <div class="wrap router-admin-wrap">
             <h1 class="wp-heading-inline">
                 <?php _e( 'Custom Router - Manage Routes', 'custom-router' ); ?>
             </h1>
-            
+
             <a href="#add-route-form" class="page-title-action">
                 <?php _e( 'Add New Route', 'custom-router' ); ?>
             </a>
@@ -90,6 +96,150 @@ class RouterAdmin {
                     <p><?php echo esc_html( $this->get_error_text( $error ) ); ?></p>
                 </div>
             <?php endif; ?>
+
+            <!-- Rewrite Rules Verification Status -->
+            <div class="router-section router-verification-section">
+                <div class="section-header">
+                    <h2><?php _e( 'Rewrite Rules Status', 'custom-router' ); ?></h2>
+                    <div class="verification-actions">
+                        <button type="button" id="check-rules-btn" class="button">
+                            <span class="dashicons dashicons-update"></span>
+                            <?php _e( 'Check Rules', 'custom-router' ); ?>
+                        </button>
+                        <button type="button" id="flush-rules-btn" class="button">
+                            <span class="dashicons dashicons-admin-tools"></span>
+                            <?php _e( 'Flush Rules', 'custom-router' ); ?>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="verification-status" class="verification-card verification-<?php echo esc_attr( $verification['status'] ); ?>">
+                    <div class="verification-header">
+                        <span class="verification-icon">
+                            <?php if ( $verification['status'] === 'success' ) : ?>
+                                <span class="dashicons dashicons-yes-alt"></span>
+                            <?php elseif ( $verification['status'] === 'warning' ) : ?>
+                                <span class="dashicons dashicons-warning"></span>
+                            <?php else : ?>
+                                <span class="dashicons dashicons-dismiss"></span>
+                            <?php endif; ?>
+                        </span>
+                        <div class="verification-message">
+                            <strong><?php echo esc_html( $verification['message'] ); ?></strong>
+                            <p class="description">
+                                <?php
+                                if ( $verification['status'] !== 'success' ) {
+                                    echo __( 'Click "Flush Rules" to regenerate WordPress rewrite rules.', 'custom-router' );
+                                } else {
+                                    echo __( 'All rewrite rules are properly registered.', 'custom-router' );
+                                }
+                                ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="verification-details">
+                        <h3><?php _e( 'Rule Details', 'custom-router' ); ?></h3>
+                        <table class="widefat">
+                            <thead>
+                                <tr>
+                                    <th><?php _e( 'Status', 'custom-router' ); ?></th>
+                                    <th><?php _e( 'Pattern', 'custom-router' ); ?></th>
+                                    <th><?php _e( 'Description', 'custom-router' ); ?></th>
+                                    <th><?php _e( 'Query String', 'custom-router' ); ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ( $verification['rules'] as $rule ) : ?>
+                                    <tr class="<?php echo $rule['registered'] ? 'rule-registered' : 'rule-missing'; ?>">
+                                        <td>
+                                            <?php if ( $rule['registered'] ) : ?>
+                                                <span class="dashicons dashicons-yes" style="color: #46b450;"></span>
+                                            <?php else : ?>
+                                                <span class="dashicons dashicons-no" style="color: #dc3232;"></span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><code><?php echo esc_html( $rule['pattern'] ); ?></code></td>
+                                        <td><?php echo esc_html( $rule['description'] ); ?></td>
+                                        <td>
+                                            <?php if ( $rule['query'] ) : ?>
+                                                <code><?php echo esc_html( $rule['query'] ); ?></code>
+                                            <?php else : ?>
+                                                <em><?php _e( 'Not registered', 'custom-router' ); ?></em>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <?php if (isset($verification['diagnostics'])) : ?>
+                    <!-- Diagnostics Section (Collapsible) -->
+                    <details style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #dcdcde; border-radius: 4px;">
+                        <summary style="cursor: pointer; font-weight: 600; user-select: none;">
+                            <span class="dashicons dashicons-admin-tools" style="vertical-align: middle;"></span>
+                            <?php _e( 'Show Advanced Diagnostics', 'custom-router' ); ?>
+                        </summary>
+                        <div style="margin-top: 15px;">
+                            <table class="widefat" style="margin-top: 10px;">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 30%;"><?php _e( 'Init Hook Fired', 'custom-router' ); ?></th>
+                                        <td><?php echo $verification['diagnostics']['init_hook_fired'] ? '✓ Yes' : '✗ No'; ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _e( 'WP Rewrite Object Exists', 'custom-router' ); ?></th>
+                                        <td><?php echo $verification['diagnostics']['wp_rewrite_exists'] ? '✓ Yes' : '✗ No'; ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _e( 'Permalink Structure', 'custom-router' ); ?></th>
+                                        <td>
+                                            <code><?php echo esc_html($verification['diagnostics']['permalink_structure'] ?: 'Default (No pretty permalinks)'); ?></code>
+                                            <?php if (empty($verification['diagnostics']['permalink_structure'])) : ?>
+                                                <br><strong style="color: #d63638;">⚠ Warning: Pretty permalinks are required for custom rewrite rules!</strong>
+                                                <br><a href="<?php echo admin_url('options-permalink.php'); ?>" class="button button-small" style="margin-top: 5px;">Enable Pretty Permalinks</a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _e( 'Database Rules Count', 'custom-router' ); ?></th>
+                                        <td><?php echo esc_html($verification['diagnostics']['db_rules_count']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _e( 'WP Rewrite Rules Count', 'custom-router' ); ?></th>
+                                        <td><?php echo esc_html($verification['diagnostics']['wp_rewrite_rules_count']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _e( 'Custom Routes Stored', 'custom-router' ); ?></th>
+                                        <td><?php echo esc_html($verification['diagnostics']['custom_routes_count']); ?></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h4 style="margin-top: 20px;"><?php _e( 'All WordPress Rewrite Rules (First 10)', 'custom-router' ); ?></h4>
+                            <div style="max-height: 200px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #dcdcde; border-radius: 3px;">
+                                <pre style="margin: 0; font-size: 11px;"><?php
+                                    $db_rules = $verification['diagnostics']['all_db_rules'];
+                                    if (!empty($db_rules)) {
+                                        $count = 0;
+                                        foreach ($db_rules as $pattern => $query) {
+                                            if ($count++ >= 10) break;
+                                            echo esc_html($pattern) . ' => ' . esc_html($query) . "\n";
+                                        }
+                                        if (count($db_rules) > 10) {
+                                            echo "\n... and " . (count($db_rules) - 10) . " more rules";
+                                        }
+                                    } else {
+                                        echo 'No rules found in database';
+                                    }
+                                ?></pre>
+                            </div>
+                        </div>
+                    </details>
+                    <?php endif; ?>
+                </div>
+            </div>
 
             <!-- Statistics Card -->
             <div class="router-stats-card">
@@ -418,5 +568,41 @@ URL:   /user/johndoe</code></pre>
         );
 
         return isset( $errors[ $error ] ) ? $errors[ $error ] : $error;
+    }
+
+    /**
+     * AJAX handler to verify rewrite rules
+     */
+    public function ajax_verify_rewrite_rules() {
+        check_ajax_referer( 'router_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+
+        $verification = $this->router->verify_rewrite_rules();
+        wp_send_json_success( $verification );
+    }
+
+    /**
+     * AJAX handler to flush rewrite rules
+     */
+    public function ajax_flush_rewrite_rules() {
+        check_ajax_referer( 'router_admin_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+        }
+
+        // Flush the rewrite rules
+        flush_rewrite_rules( true );
+
+        // Verify after flushing
+        $verification = $this->router->verify_rewrite_rules();
+
+        wp_send_json_success( array(
+            'message' => 'Rewrite rules have been flushed and regenerated.',
+            'verification' => $verification
+        ) );
     }
 }

@@ -77,6 +77,20 @@
 
             // Copy to clipboard functionality
             this.addCopyButtons();
+
+            // Verify rewrite rules button
+            $('#check-rules-btn').on('click', function(e) {
+                e.preventDefault();
+                RouterAdminJS.verifyRewriteRules();
+            });
+
+            // Flush rewrite rules button
+            $('#flush-rules-btn').on('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to flush rewrite rules? This will regenerate all WordPress rewrite rules.')) {
+                    RouterAdminJS.flushRewriteRules();
+                }
+            });
         },
 
         /**
@@ -277,22 +291,235 @@
             $('[data-tooltip]').each(function() {
                 const $el = $(this);
                 const text = $el.data('tooltip');
-                
+
                 $el.on('mouseenter', function() {
                     const $tooltip = $('<div class="router-tooltip">' + text + '</div>');
                     $('body').append($tooltip);
-                    
+
                     const offset = $el.offset();
                     $tooltip.css({
                         top: offset.top - $tooltip.outerHeight() - 5,
                         left: offset.left + ($el.outerWidth() / 2) - ($tooltip.outerWidth() / 2)
                     });
                 });
-                
+
                 $el.on('mouseleave', function() {
                     $('.router-tooltip').remove();
                 });
             });
+        },
+
+        /**
+         * Verify rewrite rules via AJAX
+         */
+        verifyRewriteRules: function() {
+            const $btn = $('#check-rules-btn');
+            const $statusDiv = $('#verification-status');
+
+            // Show loading state
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Checking...');
+
+            $.ajax({
+                url: RouterAdmin.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'verify_rewrite_rules',
+                    nonce: RouterAdmin.nonce
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        RouterAdminJS.updateVerificationDisplay(response.data);
+
+                        // Show success notice
+                        RouterAdminJS.showNotice('Verification complete!', 'success');
+                    } else {
+                        RouterAdminJS.showNotice('Failed to verify rules.', 'error');
+                    }
+                },
+                error: function() {
+                    RouterAdminJS.showNotice('AJAX error occurred.', 'error');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-update"></span> Check Rules');
+                }
+            });
+        },
+
+        /**
+         * Flush rewrite rules via AJAX
+         */
+        flushRewriteRules: function() {
+            const $btn = $('#flush-rules-btn');
+
+            // Show loading state
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Flushing...');
+
+            $.ajax({
+                url: RouterAdmin.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'flush_rewrite_rules',
+                    nonce: RouterAdmin.nonce
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        RouterAdminJS.updateVerificationDisplay(response.data.verification);
+                        RouterAdminJS.showNotice(response.data.message, 'success');
+                    } else {
+                        RouterAdminJS.showNotice('Failed to flush rules.', 'error');
+                    }
+                },
+                error: function() {
+                    RouterAdminJS.showNotice('AJAX error occurred.', 'error');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-admin-tools"></span> Flush Rules');
+                }
+            });
+        },
+
+        /**
+         * Update verification display with new data
+         */
+        updateVerificationDisplay: function(data) {
+            const $statusDiv = $('#verification-status');
+
+            // Update status class
+            $statusDiv.removeClass('verification-success verification-warning verification-error')
+                      .addClass('verification-' + data.status);
+
+            // Build HTML
+            let iconHtml = '';
+            if (data.status === 'success') {
+                iconHtml = '<span class="dashicons dashicons-yes-alt"></span>';
+            } else if (data.status === 'warning') {
+                iconHtml = '<span class="dashicons dashicons-warning"></span>';
+            } else {
+                iconHtml = '<span class="dashicons dashicons-dismiss"></span>';
+            }
+
+            let descriptionText = data.status !== 'success'
+                ? 'Click "Flush Rules" to regenerate WordPress rewrite rules.'
+                : 'All rewrite rules are properly registered.';
+
+            let headerHtml = `
+                <div class="verification-header">
+                    <span class="verification-icon">${iconHtml}</span>
+                    <div class="verification-message">
+                        <strong>${data.message}</strong>
+                        <p class="description">${descriptionText}</p>
+                    </div>
+                </div>
+            `;
+
+            // Build rules table
+            let rulesHtml = '<div class="verification-details"><h3>Rule Details</h3><table class="widefat"><thead><tr>';
+            rulesHtml += '<th>Status</th><th>Pattern</th><th>Description</th><th>Query String</th>';
+            rulesHtml += '</tr></thead><tbody>';
+
+            data.rules.forEach(function(rule) {
+                const statusIcon = rule.registered
+                    ? '<span class="dashicons dashicons-yes" style="color: #46b450;"></span>'
+                    : '<span class="dashicons dashicons-no" style="color: #dc3232;"></span>';
+
+                const queryCell = rule.query
+                    ? '<code>' + rule.query + '</code>'
+                    : '<em>Not registered</em>';
+
+                const rowClass = rule.registered ? 'rule-registered' : 'rule-missing';
+
+                rulesHtml += `<tr class="${rowClass}">
+                    <td>${statusIcon}</td>
+                    <td><code>${rule.pattern}</code></td>
+                    <td>${rule.description}</td>
+                    <td>${queryCell}</td>
+                </tr>`;
+            });
+
+            rulesHtml += '</tbody></table></div>';
+
+            // Add diagnostics if available
+            if (data.diagnostics) {
+                let diagnosticsHtml = `
+                    <details style="margin-top: 20px; padding: 15px; background: #f9f9f9; border: 1px solid #dcdcde; border-radius: 4px;">
+                        <summary style="cursor: pointer; font-weight: 600; user-select: none;">
+                            <span class="dashicons dashicons-admin-tools" style="vertical-align: middle;"></span>
+                            Show Advanced Diagnostics
+                        </summary>
+                        <div style="margin-top: 15px;">
+                            <table class="widefat" style="margin-top: 10px;">
+                                <tbody>
+                                    <tr>
+                                        <th style="width: 30%;">Init Hook Fired</th>
+                                        <td>${data.diagnostics.init_hook_fired ? '✓ Yes' : '✗ No'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>WP Rewrite Object Exists</th>
+                                        <td>${data.diagnostics.wp_rewrite_exists ? '✓ Yes' : '✗ No'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Permalink Structure</th>
+                                        <td>
+                                            <code>${data.diagnostics.permalink_structure || 'Default (No pretty permalinks)'}</code>
+                                            ${!data.diagnostics.permalink_structure ? '<br><strong style="color: #d63638;">⚠ Warning: Pretty permalinks are required for custom rewrite rules!</strong><br><a href="/wp-admin/options-permalink.php" class="button button-small" style="margin-top: 5px;">Enable Pretty Permalinks</a>' : ''}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Database Rules Count</th>
+                                        <td>${data.diagnostics.db_rules_count}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>WP Rewrite Rules Count</th>
+                                        <td>${data.diagnostics.wp_rewrite_rules_count}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Custom Routes Stored</th>
+                                        <td>${data.diagnostics.custom_routes_count}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                `;
+
+                // Add sample of DB rules
+                if (data.diagnostics.all_db_rules && Object.keys(data.diagnostics.all_db_rules).length > 0) {
+                    diagnosticsHtml += '<h4 style="margin-top: 20px;">All WordPress Rewrite Rules (First 10)</h4>';
+                    diagnosticsHtml += '<div style="max-height: 200px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #dcdcde; border-radius: 3px;">';
+                    diagnosticsHtml += '<pre style="margin: 0; font-size: 11px;">';
+
+                    let count = 0;
+                    for (const [pattern, query] of Object.entries(data.diagnostics.all_db_rules)) {
+                        if (count++ >= 10) break;
+                        diagnosticsHtml += pattern + ' => ' + query + '\n';
+                    }
+                    if (Object.keys(data.diagnostics.all_db_rules).length > 10) {
+                        diagnosticsHtml += '\n... and ' + (Object.keys(data.diagnostics.all_db_rules).length - 10) + ' more rules';
+                    }
+
+                    diagnosticsHtml += '</pre></div>';
+                } else {
+                    diagnosticsHtml += '<p style="margin-top: 20px; color: #d63638;"><strong>No rules found in database!</strong></p>';
+                }
+
+                diagnosticsHtml += '</div></details>';
+                rulesHtml += diagnosticsHtml;
+            }
+
+            $statusDiv.html(headerHtml + rulesHtml);
+        },
+
+        /**
+         * Show admin notice
+         */
+        showNotice: function(message, type) {
+            const $notice = $('<div class="notice notice-' + type + ' is-dismissible"><p>' + message + '</p></div>');
+            $('.wrap').prepend($notice);
+
+            // Auto-dismiss after 5 seconds
+            setTimeout(function() {
+                $notice.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 5000);
         }
     };
 

@@ -47,9 +47,14 @@ class RouteHandler {
      * Returns ONLY the page content without header/footer
      */
     private function handle_spa_page() {
+        // TODO: (FIXME) function not called
         // Get page slug or ID from query params
         $page_slug = isset( $_GET['slug'] ) ? sanitize_title( $_GET['slug'] ) : '';
         $page_id   = isset( $_GET['id'] ) ? intval( $_GET['id'] ) : 0;
+        
+        // Debug logging
+        error_log('Handle SPA Page function called');
+        error_log('Page Slug: ' . $page_slug . ' Page ID: ' . $page_id);
 
         if ( empty( $page_slug ) && empty( $page_id ) ) {
             $this->json_response( [ 'error' => 'Page slug or ID required' ], 400 );

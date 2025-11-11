@@ -49,12 +49,15 @@ final class CustomRouterPlugin {
     }
 
     public function activate() {
-        $this->router->register_rewrite_rules();
-        flush_rewrite_rules();
+        // Force hard flush on activation (true = delete and regenerate)
+        flush_rewrite_rules(true);
+        error_log('Custom Router Plugin Activated - Rewrite rules flushed');
     }
 
     public function deactivate() {
-        flush_rewrite_rules();
+        // Clean up rewrite rules on deactivation
+        flush_rewrite_rules(true);
+        error_log('Custom Router Plugin Deactivated - Rewrite rules flushed');
     }
 
     /**
