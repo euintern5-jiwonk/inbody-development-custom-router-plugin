@@ -36,6 +36,7 @@
                 e.preventDefault();
                 
                 const $link = $(this);
+                const PageParent = $link.data('page-parent');
                 const pageSlug = $link.data('page-slug');
                 const pageId = $link.data('page-id');
                 const productId = $link.data('product-id');
@@ -43,7 +44,7 @@
                 console.log('Slug: ', pageSlug, ' PageID: ', pageId);
 
                 if (pageSlug) {
-                    self.loadPage(pageSlug, url, { product_id: productId });
+                    self.loadPage(PageParent, pageSlug, url, { product_id: productId });
                 } else if (pageId) {
                     self.loadPageById(pageId, url);
                 }
@@ -119,7 +120,7 @@
         /**
          * Load page by slug
          */
-        loadPage: function(slug, url, params = {}, pushState = true) {
+        loadPage: function(parent, slug, url, params = {}, pushState = true) {
             // Check cache
             const cacheKey = slug + JSON.stringify(params);
             if (this.cache[cacheKey]) {
@@ -131,7 +132,14 @@
             this.showLoader();
 
             // Build API URL - slug is now part of the path: /wp-spa/load/slug
-            const apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(slug);
+            // TODO: check data-page-slug="parent/child" works
+            let apiUrl;
+            if (parent) {
+                apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(parent) + '/' + encodeURIComponent(slug);
+            } else {
+                // apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(slug);
+                apiUrl = this.config.apiEndpoint + '/' + slug;
+            }
 
             console.log('Loading page via API:', apiUrl);
 

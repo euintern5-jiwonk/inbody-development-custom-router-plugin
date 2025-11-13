@@ -1,4 +1,6 @@
 <?php
+
+use Gravity_Forms\Gravity_SMTP\Data_Store\Const_Data_Store;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class RouteHandler {
@@ -49,7 +51,8 @@ class RouteHandler {
     private function handle_spa_page() {
         // Get page slug or ID from query vars (set by rewrite rules)
         $page_slug = get_query_var( 'slug' ) ? sanitize_title( get_query_var( 'slug' ) ) : '';
-        $page_id   = get_query_var( 'id' ) ? intval( get_query_var( 'id' ) ) : 0;
+        $page_parent = get_query_var( query_var: 'parent' ) ? sanitize_title( get_query_var( 'parent' ) ) : '';
+        $page_id = get_query_var( 'id' ) ? intval( get_query_var( 'id' ) ) : 0;
 
         // Debug logging
         error_log('Handle SPA Page function called');
@@ -64,7 +67,11 @@ class RouteHandler {
         if ( $page_id ) {
             $page = get_post( $page_id );
         } else {
-            $page = get_page_by_path( $page_slug, OBJECT, 'page' );
+            if ($page_parent) {
+                $page = get_page_by_path( $page_parent . '/' . $page_slug, OBJECT, 'page' );
+            } else {
+                $page = get_page_by_path( $page_slug, OBJECT, 'page' );
+            }
         }
 
         if ( ! $page || $page->post_status !== 'publish' ) {

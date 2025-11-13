@@ -5,7 +5,7 @@
 /*
 Plugin Name: custom_router
 Description: custom router for InBody Development with SPA support
-Version: 1.0.2
+Version: 1.0.3
 Author: Jiwon Kang
 */
 

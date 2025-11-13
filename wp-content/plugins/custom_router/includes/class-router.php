@@ -44,6 +44,13 @@ class Router {
             'top'
         );
 
+        // load SPA page with parent
+        add_rewrite_rule(
+            '^wp-spa/load/([^/]+)/([^/]+)/?$',
+            'index.php?route=spa&action=load&parent=$matches[1]&slug=$matches[2]',
+            'top'
+        );
+
         // load SPA page by ID
         add_rewrite_rule(
             '^spa-page-id/([0-9]+)/?$',
@@ -120,6 +127,7 @@ class Router {
         $our_patterns = [
             'api/([^/]+)/([^/]+)/?$' => 'Generic API endpoint',
             'wp-spa/load/([^/]+)/?$' => 'SPA page loader by slug',
+            'wp-spa/load/([^/]+)/([^/]+)/?$' => 'SPA page with parent page loader by slug',
             'spa-page-id/([0-9]+)/?$' => 'SPA page loader by ID'
         ];
 
