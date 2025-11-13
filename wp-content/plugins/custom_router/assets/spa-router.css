@@ -51,19 +51,40 @@
     color: #721c24;
 }
 
-/* Page transition */
+/* Page transition - faster */
 #spa-content {
-    transition: opacity 0.2s ease;
+    transition: opacity 0.15s ease-in-out;
 }
 
-/* Optional: Progress bar */
+/* Add smooth transition for content container */
+#spa-content.fade-out {
+    opacity: 0;
+}
+
+#spa-content.fade-in {
+    opacity: 1;
+}
+
+/* Progress bar - Top loading indicator */
 .spa-progress-bar {
     position: fixed;
     top: 0;
     left: 0;
     width: 0;
-    height: 3px;
-    background: linear-gradient(to right, #3498db, #2ecc71);
-    transition: width 0.3s ease;
-    z-index: 99999;
+    height: 4px;
+    background: linear-gradient(90deg, #2196F3, #00BCD4, #4CAF50);
+    background-size: 200% 100%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999999;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }

@@ -72,7 +72,7 @@ final class CustomRouterPlugin {
             'spa-router',
             ROUTER_URL . 'assets/spa-router.js',
             array('jquery'),
-            '1.0.0',
+            '1.0.2', // Bumped version for faster transitions
             true
         );
 
@@ -90,7 +90,7 @@ final class CustomRouterPlugin {
             'spa-router',
             ROUTER_URL . 'assets/spa-router.css',
             array(),
-            '1.0.0'
+            '1.0.1' // Bumped version for loading bar improvements
         );
     }
 

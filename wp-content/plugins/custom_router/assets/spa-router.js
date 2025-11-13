@@ -76,35 +76,6 @@
             $(document).trigger('spa:page-loaded', [page]);
         },
 
-        /**
-         * Update content with transitions
-         */
-        updateContent: function(html) {
-            const $container = $(this.config.contentContainer);
-            
-            // Fade out
-            $container.addClass('fade-out');
-            
-            setTimeout(() => {
-                $container.html(html);
-                
-                // Re-initialize Elementor
-                if (typeof elementorFrontend !== 'undefined') {
-                    elementorFrontend.init();
-                    
-                    if (elementorFrontend.elementsHandler) {
-                        elementorFrontend.elementsHandler.runReadyTrigger();
-                    }
-                }
-                
-                // Fade in
-                $container.removeClass('fade-out').addClass('fade-in');
-                
-                setTimeout(() => {
-                    $container.removeClass('fade-in');
-                }, 300);
-            }, 200);
-        },
 
 
         /**
@@ -172,13 +143,17 @@
                 success: (response) => {
                     console.log('API Response received:', response);
 
-                    if (response.success) {
+                    if (response.success && response.page) {
+                        console.log('Page title:', response.page.title);
+                        console.log('Page content length:', response.page.content ? response.page.content.length : 0);
+                        console.log('Content preview:', response.page.content ? response.page.content.substring(0, 200) : 'empty');
+
                         // Cache the response
                         this.cache[cacheKey] = response.page;
 
                         this.renderPage(response.page, url, slug, params, pushState);
                     } else {
-                        console.error('API returned success=false:', response);
+                        console.error('API returned success=false or no page data:', response);
                         this.showError('Page not found');
                     }
                 },
@@ -202,27 +177,20 @@
          */
         updateContent: function(html) {
             const $container = $(this.config.contentContainer);
-            
-            $container.fadeOut(200, function() {
+
+            console.log('Updating content, HTML length:', html ? html.length : 0);
+
+            // Faster fade: 150ms instead of 200ms
+            $container.fadeOut(150, function() {
+                // Insert new HTML
                 $container.html(html);
-                
-                // Re-initialize Elementor frontend
-                if (typeof elementorFrontend !== 'undefined') {
-                    // Refresh all Elementor widgets
-                    elementorFrontend.init();
-                    
-                    // Re-initialize specific features
-                    if (elementorFrontend.elementsHandler) {
-                        elementorFrontend.elementsHandler.runReadyTrigger();
-                    }
-                    
-                    // Refresh animations
-                    if (window.elementorFrontend && elementorFrontend.waypoint) {
-                        elementorFrontend.waypoint.refreshAll();
-                    }
-                }
-                
-                $container.fadeIn(200);
+
+                // Fade in the content faster
+                $container.fadeIn(150);
+
+                // NOTE: Elementor is initialized on page load and doesn't need reinitialization
+                // The content returned from the API already has Elementor CSS classes
+                // and will render correctly without calling init()
             });
         },
 
@@ -256,16 +224,23 @@
          * Show loading indicator
          */
         showLoader: function() {
-            // Add progress bar
+            // Add progress bar if it doesn't exist
             if (!$('.spa-progress-bar').length) {
                 $('body').append('<div class="spa-progress-bar"></div>');
             }
-            
+
             const $progressBar = $('.spa-progress-bar');
-            
-            // Animate progress
-            $progressBar.css('width', '30%');
-            setTimeout(() => $progressBar.css('width', '60%'), 200);
+
+            // Reset and show
+            $progressBar.css({
+                'width': '0%',
+                'opacity': '1',
+                'display': 'block'
+            });
+
+            // Animate progress smoothly
+            setTimeout(() => $progressBar.css('width', '30%'), 50);
+            setTimeout(() => $progressBar.css('width', '70%'), 150);
         },
 
         /**
@@ -273,13 +248,16 @@
          */
         hideLoader: function() {
             const $progressBar = $('.spa-progress-bar');
+
+            // Complete the progress
             $progressBar.css('width', '100%');
-            
+
+            // Fade out and remove after a short delay
             setTimeout(() => {
-                $progressBar.fadeOut(function() {
+                $progressBar.fadeOut(200, function() {
                     $(this).remove();
                 });
-            }, 300);
+            }, 200);
         },
 
         /**
