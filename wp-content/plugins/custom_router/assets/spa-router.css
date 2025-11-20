@@ -72,11 +72,11 @@
     left: 0;
     width: 0;
     height: 4px;
-    background: linear-gradient(90deg, #2196F3, #00BCD4, #4CAF50);
+    background: linear-gradient(90deg, #b2b4b8c3 30%, #971b30c6 70%, #b2b4b8c3 100%);
     background-size: 200% 100%;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 999999;
-    box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    transition: width 0.4s cubic-bezier(0.27, 0.08, 0.57, 0.78);
+    z-index: 999;
+    box-shadow: 0 0 10px #B2B4B8;
     animation: shimmer 1.5s infinite;
 }
 

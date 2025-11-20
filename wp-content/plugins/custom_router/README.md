@@ -24,3 +24,6 @@ For pages with parent page.
     Sample SPA Page with Parent Page
 </a>
 ```
+
+# Bug
+- slug recognized as parent, null is set as slug when navigating to previous link via back button (ex: https://development.inbody.com/wp-spa/load/sample-spa-page/null)
