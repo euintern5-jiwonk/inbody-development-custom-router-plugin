@@ -72,7 +72,7 @@ final class CustomRouterPlugin {
             'spa-router',
             ROUTER_URL . 'assets/spa-router.js',
             array('jquery'),
-            '1.0.2',
+            '1.0.3', // Added SPARouter.navigate() public API
             true
         );
 

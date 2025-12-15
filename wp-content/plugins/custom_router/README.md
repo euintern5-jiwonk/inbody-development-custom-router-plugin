@@ -25,5 +25,28 @@ For pages with parent page.
 </a>
 ```
 
+### Using JavaScript to Navigate to Pages
+Use the following format to navigate to pages using the public API. (Also available in jQuery)
+```js
+var target_link_element = document.querySelector(".target-link a");
+var button = document.querySelector("button");
+
+button.addEventListener("click", function (e) {
+    var parent = target_link_element.dataset.pageParent;
+    var slug = target_link_element.dataset.pageSlug;
+
+    if (!parent || parent.length === 0) {
+        // navigating to single page
+        SPARouter.navigate(slug);
+    } else {
+        // navigating to subpage
+        SPARouter.navigate(parent, slug);
+
+        // also possible in string format
+        // SPARouter.navigate("parent/sub-parent/slug");
+    }
+});
+```
+
 # Bug
 - slug recognized as parent, null is set as slug when navigating to previous link via back button (ex: https://development.inbody.com/wp-spa/load/sample-spa-page/null)

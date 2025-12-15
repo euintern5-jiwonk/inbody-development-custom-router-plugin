@@ -279,6 +279,41 @@
                     <p>${message}</p>
                 </div>
             `);
+        },
+
+        /**
+         * PUBLIC API: Navigate to a page with optional parent slug
+         *
+         * Usage:
+         * - SPARouter.navigate('about')                    // Load /about
+         * - SPARouter.navigate('products/sample-product')  // Load /products/sample-product
+         * - SPARouter.navigate('products', 'sample-product') // Load /products/sample-product
+         */
+        navigate: function(parentOrSlug, childSlug) {
+            let fullSlug, parent, slug;
+
+            if (childSlug) {
+                // Called with two arguments: navigate('parent', 'child')
+                parent = parentOrSlug;
+                slug = childSlug;
+                fullSlug = parent + '/' + slug;
+            } else if (parentOrSlug.includes('/')) {
+                // Called with one argument containing slash: navigate('parent/child')
+                const parts = parentOrSlug.split('/');
+                parent = parts[0];
+                slug = parts.slice(1).join('/');
+                fullSlug = parentOrSlug;
+            } else {
+                // Called with single slug: navigate('about')
+                parent = null;
+                slug = parentOrSlug;
+                fullSlug = slug;
+            }
+
+            const url = '/' + fullSlug;
+            console.log('SPARouter.navigate() called:', { parent, slug, fullSlug });
+
+            this.loadPage(parent, slug, url);
         }
     };
 
