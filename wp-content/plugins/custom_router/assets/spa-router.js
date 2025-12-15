@@ -134,7 +134,7 @@
             // Build API URL - slug is now part of the path: /wp-spa/load/slug
             // TODO: check data-page-slug="parent/child" works
             let apiUrl;
-            if (parent) {
+            if (parent && parent != 'null') {
                 apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(parent) + '/' + encodeURIComponent(slug);
             } else {
                 // apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(slug);
