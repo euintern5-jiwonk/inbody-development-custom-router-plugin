@@ -5,7 +5,7 @@
 /*
 Plugin Name: custom_router
 Description: custom router for InBody Development with SPA support
-Version: 1.0.4
+Version: 1.0.6 // debug apiUrl compose rule
 Author: Jiwon Kang
 */
 
@@ -72,7 +72,7 @@ final class CustomRouterPlugin {
             'spa-router',
             ROUTER_URL . 'assets/spa-router.js',
             array('jquery'),
-            '1.0.3', // Added SPARouter.navigate() public API
+            '1.0.5', // Added support for ACF, shortcodes, and custom Elementor JS
             true
         );
 

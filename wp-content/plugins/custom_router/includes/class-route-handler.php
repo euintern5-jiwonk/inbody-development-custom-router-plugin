@@ -79,18 +79,24 @@ class RouteHandler {
             return;
         }
 
-        // Get the Elementor content
+        // Get the Elementor content, CSS, and JavaScript
         $content = $this->get_elementor_content( $page->ID );
+        $css = $this->get_elementor_css( $page->ID );
+        $js = $this->get_elementor_js( $page->ID );
+        $inline_js = $this->get_inline_scripts( $page->ID );
 
-        // Return JSON with page data
+        // Return JSON with page data including CSS and JS
         $this->json_response( [
             'success' => true,
             'page' => [
-                'id'      => $page->ID,
-                'title'   => get_the_title( $page->ID ),
-                'slug'    => $page->post_name,
-                'content' => $content,
-                'url'     => get_permalink( $page->ID ),
+                'id'        => $page->ID,
+                'title'     => get_the_title( $page->ID ),
+                'slug'      => $page->post_name,
+                'content'   => $content,
+                'css'       => $css,
+                'js'        => $js,
+                'inline_js' => $inline_js,
+                'url'       => get_permalink( $page->ID ),
             ]
         ] );
     }
@@ -273,28 +279,135 @@ class RouteHandler {
     }
 
     /**
-     * Helper: Get Elementor content
+     * Helper: Get Elementor content with shortcodes processed
      */
     private function get_elementor_content( $page_id ) {
         // Check if Elementor is active and page is built with Elementor
         if ( class_exists( '\Elementor\Plugin' ) ) {
             $elementor_instance = \Elementor\Plugin::instance();
-            
+
             // Check if this page uses Elementor
             $document = $elementor_instance->documents->get( $page_id );
-            
+
             if ( $document && $document->is_built_with_elementor() ) {
                 // Get Elementor content
                 ob_start();
                 echo $elementor_instance->frontend->get_builder_content( $page_id, true );
-                return ob_get_clean();
+                $content = ob_get_clean();
+
+                // Process shortcodes in Elementor content
+                $content = do_shortcode( $content );
+
+                return $content;
             }
         }
 
-        // Fallback to regular WordPress content
+        // Fallback to regular WordPress content with shortcodes processed
         $page = get_post( $page_id );
         $content = apply_filters( 'the_content', $page->post_content );
+        $content = do_shortcode( $content );
+
         return $content;
+    }
+
+    /**
+     * Helper: Get Elementor CSS for a specific page
+     */
+    private function get_elementor_css( $page_id ) {
+        $css = '';
+
+        if ( class_exists( '\Elementor\Plugin' ) ) {
+            // Method 1: Get post CSS file content
+            $css_file = new \Elementor\Core\Files\CSS\Post( $page_id );
+            $css_file_content = $css_file->get_content();
+
+            if ( $css_file_content ) {
+                $css .= $css_file_content;
+            }
+
+            // Method 2: Get global CSS
+            if ( class_exists( '\Elementor\Core\Files\CSS\Global_CSS' ) ) {
+                $global_css_file = \Elementor\Core\Files\CSS\Global_CSS::create( 'global.css' );
+                $global_css_content = $global_css_file->get_content();
+
+                if ( $global_css_content ) {
+                    $css .= $global_css_content;
+                }
+            }
+
+            // Method 3: Get custom CSS from page settings
+            $page_settings_css = get_post_meta( $page_id, '_elementor_page_settings', true );
+            if ( ! empty( $page_settings_css['custom_css'] ) ) {
+                $css .= "\n/* Custom Elementor CSS */\n" . $page_settings_css['custom_css'];
+            }
+
+            // Method 4: Get custom CSS from Elementor global settings
+            $elementor_settings = get_option( 'elementor_custom_css', '' );
+            if ( ! empty( $elementor_settings ) ) {
+                $css .= "\n/* Global Elementor Custom CSS */\n" . $elementor_settings;
+            }
+        }
+
+        return $css;
+    }
+
+    /**
+     * Helper: Get Elementor custom JavaScript for a specific page
+     */
+    private function get_elementor_js( $page_id ) {
+        $js = '';
+
+        if ( class_exists( '\Elementor\Plugin' ) ) {
+            // Method 1: Get custom JS from page settings
+            $page_settings = get_post_meta( $page_id, '_elementor_page_settings', true );
+            if ( ! empty( $page_settings['custom_js'] ) ) {
+                $js .= "\n/* Custom Elementor JS for page {$page_id} */\n" . $page_settings['custom_js'];
+            }
+
+            // Method 2: Get global custom JS
+            $global_js = get_option( 'elementor_custom_js', '' );
+            if ( ! empty( $global_js ) ) {
+                $js .= "\n/* Global Elementor Custom JS */\n" . $global_js;
+            }
+        }
+
+        return $js;
+    }
+
+    /**
+     * Helper: Capture and return inline scripts that were enqueued
+     */
+    private function get_inline_scripts( $page_id ) {
+        global $wp_scripts;
+        $inline_js = '';
+
+        if ( ! $wp_scripts ) {
+            return $inline_js;
+        }
+
+        // Capture inline scripts from registered handles
+        $handles_to_check = array( 'elementor-frontend', 'jquery', 'wp-util' );
+
+        foreach ( $handles_to_check as $handle ) {
+            if ( isset( $wp_scripts->registered[ $handle ] ) ) {
+                $script = $wp_scripts->registered[ $handle ];
+
+                // Get inline scripts added before or after
+                if ( ! empty( $script->extra['before'] ) ) {
+                    foreach ( $script->extra['before'] as $inline ) {
+                        $inline_js .= $inline . "\n";
+                    }
+                }
+
+                if ( ! empty( $script->extra['after'] ) ) {
+                    foreach ( $script->extra['after'] as $inline ) {
+                        $inline_js .= $inline . "\n";
+                    }
+                }
+            }
+        }
+
+        return $inline_js;
     }
 
     /**

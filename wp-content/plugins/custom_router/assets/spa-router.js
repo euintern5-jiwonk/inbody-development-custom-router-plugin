@@ -62,9 +62,19 @@
          * Render page content
          */
         renderPage: function(page, url, slug, params, pushState) {
+            // Inject Elementor CSS if available
+            if (page.css) {
+                this.injectCSS(page.css, page.id);
+            }
+
+            // Inject custom JavaScript if available
+            if (page.js || page.inline_js) {
+                this.injectJS(page.js, page.inline_js, page.id);
+            }
+
             this.updateContent(page.content);
             this.updateTitle(page.title);
-            
+
             if (pushState) {
                 this.updateURL(url || page.url, {
                     pageSlug: slug,
@@ -75,6 +85,54 @@
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
             $(document).trigger('spa:page-loaded', [page]);
+        },
+
+        /**
+         * Inject CSS into page
+         */
+        injectCSS: function(css, pageId) {
+            // Remove old page-specific CSS
+            $('#spa-page-css-' + this.currentPageId).remove();
+
+            // Add new CSS
+            if (css && css.length > 0) {
+                $('<style id="spa-page-css-' + pageId + '">' + css + '</style>').appendTo('head');
+                console.log('Injected Elementor CSS for page:', pageId);
+            }
+
+            // Store current page ID
+            this.currentPageId = pageId;
+        },
+
+        /**
+         * Inject and execute JavaScript for page
+         */
+        injectJS: function(js, inlineJs, pageId) {
+            // Remove old page-specific JS
+            $('#spa-page-js-' + this.currentPageId).remove();
+            $('#spa-page-inline-js-' + this.currentPageId).remove();
+
+            // Add and execute custom JS
+            if (js && js.length > 0) {
+                try {
+                    // Create script tag for custom JS
+                    $('<script id="spa-page-js-' + pageId + '">' + js + '</script>').appendTo('body');
+                    console.log('Injected custom Elementor JS for page:', pageId);
+                } catch (error) {
+                    console.error('Error executing custom JS:', error);
+                }
+            }
+
+            // Add and execute inline JS
+            if (inlineJs && inlineJs.length > 0) {
+                try {
+                    // Create script tag for inline JS
+                    $('<script id="spa-page-inline-js-' + pageId + '">' + inlineJs + '</script>').appendTo('body');
+                    console.log('Injected inline JS for page:', pageId);
+                } catch (error) {
+                    console.error('Error executing inline JS:', error);
+                }
+            }
         },
 
 
@@ -132,10 +190,11 @@
             this.showLoader();
 
             // Build API URL - slug is now part of the path: /wp-spa/load/slug
-            // TODO: check data-page-slug="parent/child" works
             let apiUrl;
-            if (parent && parent != 'null') {
+            if (parent && parent != 'null' && slug && slug != 'null') {
                 apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(parent) + '/' + encodeURIComponent(slug);
+            } else if (parent && parent != null && (!slug || slug === 'null')) {
+                apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(parent) + '/';
             } else {
                 // apiUrl = this.config.apiEndpoint + '/' + encodeURIComponent(slug);
                 apiUrl = this.config.apiEndpoint + '/' + slug;
